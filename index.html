@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nómina Pro - Sistema de Gestión Salarial</title>
+  
+  <!-- FAVICON PERSONALIZADO -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2334656D'/><text y='.85em' font-size='70' x='15'>💵</text></svg>">
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    :root {
+      --mint-light: #c6ffc1;
+      --green-mid: #78c87a;
+      --green-accent: #53a653;
+      --teal-dark: #34656d;
+      --teal-mid: #5b8e96;
+      --teal-light: #7fb0b9;
+      --slate-dark: #334443;
+      --slate-mid: #526362;
+      --slate-light: #94a7a6;
+      
+      --bg-app: #eef2f1; 
+      --card-bg: #ffffff;
+      --text-dark: #1e2827;
+      --text-muted: #526362;
+      --border-color: #dbe3e1;
+      --radius: 18px;
+      --shadow: 0 10px 30px -5px rgba(51, 68, 67, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-dark);
+      padding: 40px 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    /* Header estilizado */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, var(--teal-dark) 0%, var(--slate-dark) 100%);
+      padding: 35px 40px;
+      border-radius: var(--radius);
+      color: white;
+      box-shadow: 0 12px 35px rgba(52, 101, 109, 0.2);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(198, 255, 193, 0.2);
+    }
+
+    .header-text h1 {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      background: linear-gradient(90deg, #ffffff 30%, var(--mint-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      drop-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .header-text p {
+      color: var(--teal-light);
+      margin-top: 6px;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .header-icon {
+      width: 85px;
+      height: 85px;
+      background: rgba(198, 255, 193, 0.12);
+      border: 2px solid var(--mint-light);
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    /* Grid de Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      padding: 20px 24px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      background: var(--mint-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--teal-dark);
+    }
+
+    .stat-info span {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-info h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--slate-dark);
+      margin-top: 2px;
+    }
+
+    /* Layout Principal */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Tarjetas generales */
+    .card {
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+      margin-bottom: 30px;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--slate-dark);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title svg {
+      color: var(--teal-dark);
+    }
+
+    /* Formulario */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--slate-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, select {
+      padding: 12px 16px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: var(--text-dark);
+      background-color: #f9fbfb;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--teal-dark);
+      box-shadow: 0 0 0 4px rgba(52, 101, 109, 0.12);
+      background-color: #ffffff;
+    }
+
+    .checkbox-group {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      margin-top: 26px;
+      background-color: var(--bg-app);
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border-color);
+    }
+
+    .checkbox-group input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--teal-dark);
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 0.88rem;
+      cursor: pointer;
+      color: var(--text-dark);
+    }
+
+    .btn-submit {
+      background: var(--teal-dark);
+      color: white;
+      border: none;
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.25s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 16px rgba(52, 101, 109, 0.25);
+    }
+
+    .btn-submit:hover {
+      background: var(--slate-dark);
+      transform: translateY(-2px);
+    }
+
+    .dynamic-field {
+      display: none;
+    }
+
+    .dynamic-field.active {
+      display: flex;
+    }
+
+    /* Tabla */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+    }
+
+    th {
+      background-color: #f4f7f6;
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--slate-mid);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.9rem;
+    }
+
+    tbody tr:hover {
+      background-color: var(--bg-app);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background-color: var(--mint-light);
+      color: var(--slate-dark);
+    }
+
+    .btn-delete {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.78rem;
+    }
+
+    .btn-delete:hover {
+      background: #c62828;
+      color: white;
+    }
+
+    .total-box {
+      margin-top: 24px;
+      background: var(--slate-dark);
+      color: white;
+      padding: 22px 28px;
+      border-radius: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .total-box span {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--teal-light);
+    }
+
+    .total-box h3 {
+      font-size: 1.9rem;
+      color: var(--mint-light);
+      font-weight: 800;
+    }
+
+    .error-msg {
+      color: #d32f2f;
+      font-size: 0.88rem;
+      margin-top: 10px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .chart-box {
+      height: 220px;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header Principal -->
+  <div class="header">
+    <div class="header-text">
+      <h1>Nómina Pro</h1>
+      <p>Panel de control financiero y liquidación salarial automatizada</p>
+    </div>
+    <div class="header-icon">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#c6ffc1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="6" width="20" height="12" rx="2"/>
+        <circle cx="12" cy="12" r="2"/>
+        <path d="M6 12h.01M18 12h.01"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      </div>
+      <div class="stat-info">
+        <span>Total Empleados</span>
+        <h2 id="kpiTotalEmpl">0</h2>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background-color: #5b8e96; color: white;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      </div>
+      <div class="stat-info">
+        <span>Promedio Neto</span>
+        <h2 id="kpiPromedio">$0</h2>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background-color: #334443; color: #c6ffc1;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+      </div>
+      <div class="stat-info">
+        <span>Presupuesto Total</span>
+        <h2 id="kpiTotalNivel">$0</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout Principal -->
+  <div class="dashboard-grid">
+    <!-- Formulario -->
+    <div class="card" style="margin-bottom: 0;">
+      <div class="card-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+        Registrar Empleado
+      </div>
+      <form id="payrollForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="nombre">Nombre Completo</label>
+            <input type="text" id="nombre" placeholder="Ej. Camilo Andrés" required>
+          </div>
+
+          <div class="form-group">
+            <label for="fechaIngreso">Fecha Ingreso</label>
+            <input type="date" id="fechaIngreso" required>
+          </div>
+
+          <div class="form-group">
+            <label for="tipoEmpleado">Tipo de Empleado</label>
+            <select id="tipoEmpleado" onchange="actualizarCampos()">
+              <option value="asalariado">Asalariado</option>
+              <option value="horas">Por Horas</option>
+              <option value="comision">Por Comisión</option>
+              <option value="temporal">Temporal</option>
+            </select>
+          </div>
+
+          <div class="form-group dynamic-field active" id="fieldSalarioFijo">
+            <label for="salarioFijo">Salario Fijo ($)</label>
+            <input type="number" id="salarioFijo" min="0" value="2800000">
+          </div>
+
+          <div class="form-group dynamic-field" id="fieldTarifaHora">
+            <label for="tarifaHora">Tarifa por Hora ($)</label>
+            <input type="number" id="tarifaHora" min="0" value="18000">
+          </div>
+
+          <div class="form-group dynamic-field" id="fieldHorasTrabajadas">
+            <label for="horasTrabajadas">Horas Trabajadas</label>
+            <input type="number" id="horasTrabajadas" min="0" value="48">
+          </div>
+
+          <div class="form-group dynamic-field" id="fieldSalarioBaseComision">
+            <label for="salarioBase">Salario Base ($)</label>
+            <input type="number" id="salarioBase" min="0" value="1300000">
+          </div>
+
+          <div class="form-group dynamic-field" id="fieldVentas">
+            <label for="ventas">Total Ventas ($)</label>
+            <input type="number" id="ventas" min="0" value="22000000">
+          </div>
+
+          <div class="form-group dynamic-field checkbox-group" id="fieldFondoAhorro">
+            <input type="checkbox" id="aceptaFondo">
+            <label for="aceptaFondo">Fondo Ahorro (2%)</label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Calcular y Agregar a Nómina
+        </button>
+        <div id="error" class="error-msg"></div>
+      </form>
+    </div>
+
+    <!-- Gráfico -->
+    <div class="card" style="margin-bottom: 0;">
+      <div class="card-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        Distribución por Tipo
+      </div>
+      <div class="chart-box">
+        <canvas id="nominaChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla Resumen -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      Resumen Detallado
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Antigüedad</th>
+            <th>S. Bruto</th>
+            <th>Bonos</th>
+            <th>Beneficios</th>
+            <th>Deducciones</th>
+            <th>S. Neto</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tablaNomina">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="total-box">
+      <span>Costo Total de Nómina</span>
+      <h3 id="totalNomina">$0</h3>
+    </div>
+  </div>
+</div>
+
+<script>
+  class Empleado {
+    constructor(nombre, fechaIngreso) {
+      this.id = Date.now() + Math.random();
+      this.nombre = nombre;
+      this.fechaIngreso = new Date(fechaIngreso);
+    }
+
+    getAntiguedadAnios() {
+      const hoy = new Date();
+      let anios = hoy.getFullYear() - this.fechaIngreso.getFullYear();
+      const mes = hoy.getMonth() - this.fechaIngreso.getMonth();
+      if (mes < 0 || (mes === 0 && hoy.getDate() < this.fechaIngreso.getDate())) {
+        anios--;
+      }
+      return Math.max(0, anios);
+    }
+
+    calcularSalarioBruto() { return 0; }
+    calcularBonos() { return 0; }
+    calcularBeneficiosAdicionales() { return 0; }
+
+    calcularDeducciones() {
+      return this.calcularSalarioBruto() * 0.04;
+    }
+
+    calcularSalarioNeto() {
+      const bruto = this.calcularSalarioBruto();
+      const bonos = this.calcularBonos();
+      const beneficios = this.calcularBeneficiosAdicionales();
+      const deducciones = this.calcularDeducciones();
+
+      const neto = (bruto + bonos + beneficios) - deducciones;
+      return Math.max(0, neto);
+    }
+  }
+
+  class EmpleadoAsalariado extends Empleado {
+    constructor(nombre, fechaIngreso, salarioFijo) {
+      super(nombre, fechaIngreso);
+      this.salarioFijo = parseFloat(salarioFijo);
+    }
+    calcularSalarioBruto() { return this.salarioFijo; }
+    calcularBonos() { return this.getAntiguedadAnios() > 5 ? this.salarioFijo * 0.10 : 0; }
+    calcularBeneficiosAdicionales() { return 1000000; }
+  }
+
+  class EmpleadoPorHoras extends Empleado {
+    constructor(nombre, fechaIngreso, tarifaHora, horasTrabajadas, aceptaFondo) {
+      super(nombre, fechaIngreso);
+      this.tarifaHora = parseFloat(tarifaHora);
+      this.horasTrabajadas = parseFloat(horasTrabajadas);
+      this.aceptaFondo = aceptaFondo;
+    }
+    calcularSalarioBruto() {
+      if (this.horasTrabajadas <= 40) {
+        return this.horasTrabajadas * this.tarifaHora;
+      } else {
+        const horasExtras = this.horasTrabajadas - 40;
+        return (40 * this.tarifaHora) + (horasExtras * this.tarifaHora * 1.5);
+      }
+    }
+    calcularBonos() { return 0; }
+    calcularBeneficiosAdicionales() {
+      return (this.getAntiguedadAnios() > 1 && this.aceptaFondo) ? this.calcularSalarioBruto() * 0.02 : 0;
+    }
+  }
+
+  class EmpleadoPorComision extends Empleado {
+    constructor(nombre, fechaIngreso, salarioBase, ventas) {
+      super(nombre, fechaIngreso);
+      this.salarioBase = parseFloat(salarioBase);
+      this.ventas = parseFloat(ventas);
+      this.porcentajeComision = 0.05;
+    }
+    calcularSalarioBruto() { return this.salarioBase + (this.ventas * this.porcentajeComision); }
+    calcularBonos() { return this.ventas > 20000000 ? this.ventas * 0.03 : 0; }
+    calcularBeneficiosAdicionales() { return 1000000; }
+  }
+
+  class EmpleadoTemporal extends Empleado {
+    constructor(nombre, fechaIngreso, salarioFijo) {
+      super(nombre, fechaIngreso);
+      this.salarioFijo = parseFloat(salarioFijo);
+    }
+    calcularSalarioBruto() { return this.salarioFijo; }
+    calcularBonos() { return 0; }
+    calcularBeneficiosAdicionales() { return 0; }
+  }
+
+  let listaNomina = [];
+  let myChart = null;
+
+  function actualizarCampos() {
+    const tipo = document.getElementById('tipoEmpleado').value;
+    document.querySelectorAll('.dynamic-field').forEach(el => el.classList.remove('active'));
+
+    if (tipo === 'asalariado' || tipo === 'temporal') {
+      document.getElementById('fieldSalarioFijo').classList.add('active');
+    } else if (tipo === 'horas') {
+      document.getElementById('fieldTarifaHora').classList.add('active');
+      document.getElementById('fieldHorasTrabajadas').classList.add('active');
+      document.getElementById('fieldFondoAhorro').classList.add('active');
+    } else if (tipo === 'comision') {
+      document.getElementById('fieldSalarioBaseComision').classList.add('active');
+      document.getElementById('fieldVentas').classList.add('active');
+    }
+  }
+
+  const fmt = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+
+  document.getElementById('payrollForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const errorDiv = document.getElementById('error');
+    errorDiv.innerText = '';
+
+    const nombre = document.getElementById('nombre').value;
+    const fechaIngreso = document.getElementById('fechaIngreso').value;
+    const tipo = document.getElementById('tipoEmpleado').value;
+
+    let nuevoEmpleado = null;
+
+    try {
+      if (tipo === 'asalariado') {
+        nuevoEmpleado = new EmpleadoAsalariado(nombre, fechaIngreso, document.getElementById('salarioFijo').value);
+      } else if (tipo === 'horas') {
+        const horas = document.getElementById('horasTrabajadas').value;
+        if (horas < 0) throw new Error("Horas inválidas.");
+        nuevoEmpleado = new EmpleadoPorHoras(nombre, fechaIngreso, document.getElementById('tarifaHora').value, horas, document.getElementById('aceptaFondo').checked);
+      } else if (tipo === 'comision') {
+        const ventas = document.getElementById('ventas').value;
+        if (ventas < 0) throw new Error("Ventas inválidas.");
+        nuevoEmpleado = new EmpleadoPorComision(nombre, fechaIngreso, document.getElementById('salarioBase').value, ventas);
+      } else if (tipo === 'temporal') {
+        nuevoEmpleado = new EmpleadoTemporal(nombre, fechaIngreso, document.getElementById('salarioFijo').value);
+      }
+
+      listaNomina.push(nuevoEmpleado);
+      renderTabla();
+      document.getElementById('nombre').value = '';
+    } catch (err) {
+      errorDiv.innerText = err.message;
+    }
+  });
+
+  function eliminarEmpleado(id) {
+    listaNomina = listaNomina.filter(emp => emp.id !== id);
+    renderTabla();
+  }
+
+  function renderTabla() {
+    const tbody = document.getElementById('tablaNomina');
+    tbody.innerHTML = '';
+    let acumuladoTotal = 0;
+    const conteoTipos = { Asalariado: 0, PorHoras: 0, PorComision: 0, Temporal: 0 };
+
+    listaNomina.forEach(emp => {
+      const neto = emp.calcularSalarioNeto();
+      acumuladoTotal += neto;
+
+      const tipoTexto = emp.constructor.name.replace('Empleado', '');
+      if (conteoTipos[tipoTexto] !== undefined) conteoTipos[tipoTexto]++;
+
+      const fila = `
+        <tr>
+          <td><strong>${emp.nombre}</strong></td>
+          <td><span class="badge">${tipoTexto}</span></td>
+          <td>${emp.getAntiguedadAnios()} años</td>
+          <td>${fmt.format(emp.calcularSalarioBruto())}</td>
+          <td>${fmt.format(emp.calcularBonos())}</td>
+          <td>${fmt.format(emp.calcularBeneficiosAdicionales())}</td>
+          <td style="color: #c62828;">-${fmt.format(emp.calcularDeducciones())}</td>
+          <td style="font-weight: 800; color: #34656d;">${fmt.format(neto)}</td>
+          <td><button class="btn-delete" onclick="eliminarEmpleado(${emp.id})">Eliminar</button></td>
+        </tr>
+      `;
+      tbody.innerHTML += fila;
+    });
+
+    document.getElementById('totalNomina').innerText = fmt.format(acumuladoTotal);
+    document.getElementById('kpiTotalNivel').innerText = fmt.format(acumuladoTotal);
+    document.getElementById('kpiTotalEmpl').innerText = listaNomina.length;
+    
+    const promedio = listaNomina.length > 0 ? acumuladoTotal / listaNomina.length : 0;
+    document.getElementById('kpiPromedio').innerText = fmt.format(promedio);
+
+    actualizarGrafico(conteoTipos);
+  }
+
+  function actualizarGrafico(dataTipos) {
+    const ctx = document.getElementById('nominaChart').getContext('2d');
+    
+    if (myChart) myChart.destroy();
+
+    myChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Asalariado', 'Por Horas', 'Por Comisión', 'Temporal'],
+        datasets: [{
+          data: [dataTipos.Asalariado, dataTipos.PorHoras, dataTipos.PorComision, dataTipos.Temporal],
+          backgroundColor: ['#34656d', '#78c87a', '#c6ffc1', '#526362'],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { font: { family: 'Plus Jakarta Sans', size: 11, weight: 'bold' } }
+          }
+        }
+      }
+    });
+  }
+
+  document.getElementById('fechaIngreso').valueAsDate = new Date();
+  actualizarCampos();
+  renderTabla();
+</script>
+
+</body>
+</html>
